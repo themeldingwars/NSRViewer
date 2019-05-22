@@ -116,11 +116,6 @@ namespace NSRViewer
             NSRFile.Meta_Header.description = ReadToNull(ref binaryReader);
             NSRFile.Meta_Header.recording_time = ReadToNull(ref binaryReader);
 
-            //NSRFile.Meta_Header.unk1 = binaryReader.ReadUInt32();
-            //NSRFile.Meta_Header.unk2 = new float[6];
-            //for (int i = 0; i < 6; i++)
-            //    NSRFile.Meta_Header.unk2[i] = binaryReader.ReadSingle();
-
             NSRFile.Meta_Header.position = new System.Numerics.Vector3(binaryReader.ReadSingle(), binaryReader.ReadSingle(), binaryReader.ReadSingle());
             NSRFile.Meta_Header.rotation = new System.Numerics.Vector4(binaryReader.ReadSingle(), binaryReader.ReadSingle(), binaryReader.ReadSingle(), binaryReader.ReadSingle());
 
@@ -406,17 +401,6 @@ namespace NSRViewer
 
         private void ReplayFileListBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            /*
-            byte[] compressed_file_preview = new byte[8193]; //8KB+1 to successfully decompress using 4KB buffer
-            using (FileStream fs = new FileStream(ReplayFileListBox.SelectedItem.ToString(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-            {
-                fs.Read(compressed_file_preview, 0, compressed_file_preview.Length);
-                fs.Close();
-            }
-            //byte[] compressed_file = File.ReadAllBytes(ReplayFileListBox.SelectedItem.ToString());
-            byte[] decompressed_bytes = Decompress(compressed_file_preview);
-            MemoryStream decompressed_stream = new MemoryStream(decompressed_bytes);
-            */
             if (ReplayFileListBox.SelectedIndex > -1)
             {
                 using (FileStream compressed_stream_preview = new FileStream(ReplayFileListBox.SelectedItem.ToString(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
@@ -456,8 +440,6 @@ namespace NSRViewer
                                 UserValLabel.Text = NSRFile.Meta_Header.character_name;
                                 FirefallVersionValLabel.Text = NSRFile.Meta_Header.firefall_version;
                                 Date2ValLabel.Text = NSRFile.Meta_Header.game_time;
-                                //FileInfo NSRInfo = new FileInfo(ReplayFileListBox.SelectedItem.ToString());
-                                //FileSizeValLabel.Text = $"{NSRInfo.Length.ToString("N0")} bytes | ~{(((NSRInfo.Length * 3) / 1024f) / 1024f).ToString("N2")} MB RAW";
                                 FileSizeValLabel.Text = $"{comp_length.ToString("N0")} bytes | {((raw_length / 1024f) / 1024f).ToString("N2")} MB RAW";
                             }
                         }
@@ -521,43 +503,6 @@ namespace NSRViewer
             if (ReplayFileListBox.SelectedIndex > -1)
             {
                 // Display data collected from matrix_fury::RequestGhosts
-                
-                /*
-                using (FileStream compressed_stream = new FileStream(ReplayFileListBox.SelectedItem.ToString(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                {
-                    compressed_stream.Position = compressed_stream.Length - 4;
-                    byte[] length_bytes = new byte[4];
-                    compressed_stream.Read(length_bytes, 0, 4);
-                    compressed_stream.Position = 0;
-                    long raw_length = BitConverter.ToUInt32(length_bytes, 0);                    
-
-                    using (ProgressStream progressStream = new ProgressStream(compressed_stream))
-                    {
-                        using (GZipStream decompressed_stream = new GZipStream(progressStream, CompressionMode.Decompress))
-                        {
-                            decompressed_stream.BaseStream.SetLength(raw_length);
-                            MessageBox.Show("HOLD");
-                            NSR NSRFile = new NSR();
-                            using (BinaryReader decompressed_reader = new BinaryReader(decompressed_stream))
-                            {
-                                long length = ((GZipStream)decompressed_reader.BaseStream).BaseStream.Length;
-                                MessageBox.Show("Length = " + length.ToString());
-                                if (LoadNSR(decompressed_reader, ref NSRFile) == false)
-                                {
-                                    MessageBox.Show("Error loading Network Stream Replay.");
-                                }
-                                else
-                                {
-
-                                }
-                            }
-                        }
-                    }
-                    
-                }
-                GC.Collect();
-                return;
-                */
 
                 // Full Load NSR
                 byte[] compressed_file = File.ReadAllBytes(ReplayFileListBox.SelectedItem.ToString()); // loads compressed size into memory
@@ -1247,66 +1192,6 @@ namespace NSRViewer
         public NSR()
         {
             Keyframe_Headers = new List<KeyframeHeader>();
-        }
-    }
-
-    public class ProgressStream : Stream
-    {
-        public long BytesRead { get; set; }
-        long _length;
-        Stream _baseStream;
-        public ProgressStream(Stream s)
-        {
-            _baseStream = s;
-        }
-        public override bool CanRead
-        {
-            get { return _baseStream.CanRead; }
-        }
-        public override bool CanSeek
-        {
-            get { return false; }
-        }
-        public override bool CanWrite
-        {
-            get { return false; }
-        }
-        public override void Flush()
-        {
-            _baseStream.Flush();
-        }
-        public override long Length
-        {
-            get { return _length; }
-        }
-        public override long Position
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
-        public override int Read(byte[] buffer, int offset, int count)
-        {
-            int rc = _baseStream.Read(buffer, offset, count);
-            BytesRead += rc;
-            return rc;
-        }
-        public override long Seek(long offset, SeekOrigin origin)
-        {
-            throw new NotImplementedException();
-        }
-        public override void SetLength(long value)
-        {
-            _length = value;
-        }
-        public override void Write(byte[] buffer, int offset, int count)
-        {
-            throw new NotImplementedException();
         }
     }
 }
