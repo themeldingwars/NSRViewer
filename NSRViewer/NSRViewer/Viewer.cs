@@ -1210,7 +1210,7 @@ namespace NSRViewer
             { 769, "bp_pvp_br2" },
             { 770, "Yamamoto 2" },
             { 771, "Chosen Warfront Test Zone" },
-            { 722, "Yamamoto 3" },
+            { 772, "Yamamoto 3" },
             { 773, "Newzoneland" },
             { 775, "bp_pvp_br3" },
             { 776, "bp_pvp_br4" },
