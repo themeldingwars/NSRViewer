@@ -100,8 +100,11 @@ namespace NSRViewer
                 nsrFile.IndexHeader.Count = binaryReader.ReadUInt32();
                 nsrFile.IndexHeader.IndexOffset = binaryReader.ReadUInt32();
                 nsrFile.IndexHeader.Offsets = new uint[nsrFile.IndexHeader.Count];
+
                 for (int i = 0; i < nsrFile.IndexHeader.Count; i++)
+                {
                     nsrFile.IndexHeader.Offsets[i] = binaryReader.ReadUInt32();
+                }
             }
             // index header
 
@@ -154,133 +157,16 @@ namespace NSRViewer
                         KeyframeOrder1 = binaryReader.ReadUInt16(),
                         Length = binaryReader.ReadUInt16(),
                         Unk0 = binaryReader.ReadUInt16(),
-                        Id = new byte[8]
+                        Id = binaryReader.ReadBytes(8),
+                        DataType = binaryReader.ReadByte(),
+                        Unk1 = binaryReader.ReadByte(),
+                        DataCount = binaryReader.ReadByte(),
                     };
 
-                    keyframeHeader.Id = binaryReader.ReadBytes(8);
-                    keyframeHeader.DataType = binaryReader.ReadByte();
-                    keyframeHeader.Unk1 = binaryReader.ReadByte();
-                    keyframeHeader.DataCount = binaryReader.ReadByte();
                     keyframeHeader.Data = new byte[keyframeHeader.Length - 11];
                     keyframeHeader.Data = binaryReader.ReadBytes(keyframeHeader.Length - 11);
+                    keyframeHeader.KeyframeType = NSR.KeyframeHeader.MapKeyframeTypes(keyframeHeader.Id[0]);
 
-                    switch (keyframeHeader.Id[0])
-                    {
-                        case 0:
-                            keyframeHeader.KeyframeType = "Generic";
-                            break;
-                        case 2:
-                            keyframeHeader.KeyframeType = "Character_BaseController";
-                            break;
-                        case 3:
-                            keyframeHeader.KeyframeType = "Character_NPCController";
-                            break;
-                        case 4:
-                            keyframeHeader.KeyframeType = "Character_MissionAndMarkerController";
-                            break;
-                        case 5:
-                            keyframeHeader.KeyframeType = "Character_CombatController";
-                            break;
-                        case 6:
-                            keyframeHeader.KeyframeType = "Character_LocalEffectsController";
-                            break;
-                        case 7:
-                            keyframeHeader.KeyframeType = "Character_SpectatorController";
-                            break;
-                        case 8:
-                            keyframeHeader.KeyframeType = "Character_ObserverView";
-                            break;
-                        case 9:
-                            keyframeHeader.KeyframeType = "Character_EquipmentView";
-                            break;
-                        case 10:
-                            keyframeHeader.KeyframeType = "Character_AIObserverView";
-                            break;
-                        case 11:
-                            keyframeHeader.KeyframeType = "Character_Combat View";
-                            break;
-                        case 12:
-                            keyframeHeader.KeyframeType = "Character_MovementView";
-                            break;
-                        case 13:
-                            keyframeHeader.KeyframeType = "Character_TinyObjectView";
-                            break;
-                        case 14:
-                            keyframeHeader.KeyframeType = "Character_DynamicProjectileView";
-                            break;
-                        case 16:
-                            keyframeHeader.KeyframeType = "Melding_ObserverView";
-                            break;
-                        case 18:
-                            keyframeHeader.KeyframeType = "MeldingBubble_ObserverView";
-                            break;
-                        case 20:
-                            keyframeHeader.KeyframeType = "AreaVisualData_ObserverView";
-                            break;
-                        case 21:
-                            keyframeHeader.KeyframeType = "AreaVisualData_ParticleEffectsView";
-                            break;
-                        case 22:
-                            keyframeHeader.KeyframeType = "AreaVisualData_MapMarkerView";
-                            break;
-                        case 23:
-                            keyframeHeader.KeyframeType = "AreaVisualData_TinyObjectView";
-                            break;
-                        case 24:
-                            keyframeHeader.KeyframeType = "AreaVisualData_LootObjectView";
-                            break;
-                        case 25:
-                            keyframeHeader.KeyframeType = "AreaVisualData_ForceShieldView";
-                            break;
-                        case 27:
-                            keyframeHeader.KeyframeType = "Vehicle_BaseController";
-                            break;
-                        case 28:
-                            keyframeHeader.KeyframeType = "Vehicle_CombatController";
-                            break;
-                        case 29:
-                            keyframeHeader.KeyframeType = "Vehicle_ObserverView";
-                            break;
-                        case 30:
-                            keyframeHeader.KeyframeType = "Vehicle_CombatView";
-                            break;
-                        case 31:
-                            keyframeHeader.KeyframeType = "Vehicle_MovementView";
-                            break;
-                        case 33:
-                            keyframeHeader.KeyframeType = "Anchor_AIObserverView";
-                            break;
-                        case 35:
-                            keyframeHeader.KeyframeType = "Deployable_ObserverView";
-                            break;
-                        case 36:
-                            keyframeHeader.KeyframeType = "Deployable_NPCObserverView";
-                            break;
-                        case 37:
-                            keyframeHeader.KeyframeType = "Deployable_HardpointView";
-                            break;
-                        case 39:
-                            keyframeHeader.KeyframeType = "Turret_BaseController";
-                            break;
-                        case 40:
-                            keyframeHeader.KeyframeType = "Turret_ObserverView";
-                            break;
-                        case 45:
-                            keyframeHeader.KeyframeType = "Outpost_ObserverView";
-                            break;
-                        case 48:
-                            keyframeHeader.KeyframeType = "ResourceNode_ObserverView";
-                            break;
-                        case 51:
-                            keyframeHeader.KeyframeType = "CarryObject_ObserverView";
-                            break;
-                        case 53:
-                            keyframeHeader.KeyframeType = "LootStoreExtension_LootObjectView";
-                            break;
-                        default:
-                            keyframeHeader.KeyframeType = $"<DEFAULT> [{keyframeHeader.Id[0]}]";
-                            break;
-                    }
                     nsrFile.KeyframeHeaders.Add(keyframeHeader);
                 }
                 // ghosts - keyframe

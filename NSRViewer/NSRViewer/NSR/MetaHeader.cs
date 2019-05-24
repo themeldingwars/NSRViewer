@@ -31,7 +31,7 @@ namespace NSRViewer.NSR
         public byte[] Padding;
         public byte[] Unk4;
 
-        private static readonly Dictionary<uint, string> Zones = new Dictionary<uint, string>()
+        private static readonly Dictionary<uint, string> Zones = new Dictionary<uint, string>
         {
             { 1, "Thumper" },
             { 2, "Joshs Super Mountains" },
