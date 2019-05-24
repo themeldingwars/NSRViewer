@@ -1,6 +1,6 @@
 ﻿namespace NSRViewer
 {
-    partial class Ghost_Info
+    partial class GhostInfo
     {
         /// <summary>
         /// Required designer variable.
@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Ghost_Info));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(GhostInfo));
             this.GhostInfoGroupBox = new System.Windows.Forms.GroupBox();
             this.KeyframesListBox = new System.Windows.Forms.ListView();
             this.GhostPropertyGrid = new System.Windows.Forms.PropertyGrid();
@@ -157,7 +157,7 @@
             this.ForeColor = System.Drawing.Color.DarkGray;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MinimumSize = new System.Drawing.Size(700, 420);
-            this.Name = "Ghost_Info";
+            this.Name = "GhostInfo";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Ghost Info";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Ghost_Info_FormClosing);

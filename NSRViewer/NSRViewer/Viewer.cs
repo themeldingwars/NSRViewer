@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
+using System.Numerics;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using System.IO.Compression;
@@ -21,27 +18,34 @@ namespace NSRViewer
 
         private void BrowseBtn_Click(object sender, EventArgs e)
         {
-            FolderBrowserDialog FBD = new FolderBrowserDialog();
-            FBD.ShowNewFolderButton = false;
-            FBD.Description = "Select directory containing NSR files...";
-            if (Directory.Exists(ReplayDirectoryTextBox.Text))
-                FBD.SelectedPath = ReplayDirectoryTextBox.Text;
-
-            if (FBD.ShowDialog() == DialogResult.OK)
+            FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog
             {
-                LoadNSRDirectory(FBD.SelectedPath);
+                ShowNewFolderButton = false,
+                Description = "Select directory containing NSR files..."
+            };
+
+            if (Directory.Exists(ReplayDirectoryTextBox.Text))
+            {
+                folderBrowserDialog.SelectedPath = ReplayDirectoryTextBox.Text;
+            }
+
+            if (folderBrowserDialog.ShowDialog() == DialogResult.OK)
+            {
+                LoadNSRDirectory(folderBrowserDialog.SelectedPath);
             }
         }
 
-        public void LoadNSRDirectory(string NSRDirectory)
+        public void LoadNSRDirectory(string nsrDirectory)
         {
             ReplayFileListBox.Items.Clear();
-            ReplayDirectoryTextBox.Text = NSRDirectory;
-            foreach (string file in Directory.GetFiles(NSRDirectory, "*.nsr", SearchOption.TopDirectoryOnly))
+            ReplayDirectoryTextBox.Text = nsrDirectory;
+            foreach (string file in Directory.GetFiles(nsrDirectory, "*.nsr", SearchOption.TopDirectoryOnly))
             {
                 // verify extension due to 3 char extension processing being different
                 if (new FileInfo(file).Extension == ".nsr")
+                {
                     ReplayFileListBox.Items.Add(file);
+                }
             }
         }
 
@@ -55,10 +59,10 @@ namespace NSRViewer
             return ReplayFileListBox.Items;
         }
 
-        public void ApplyFilteredReplayFileListItems(List<string> ResultList)
+        public void ApplyFilteredReplayFileListItems(List<string> resultList)
         {
             ReplayFileListBox.Items.Clear();
-            foreach (string item in ResultList)
+            foreach (string item in resultList)
             {
                 ReplayFileListBox.Items.Add(item);
             }
@@ -74,308 +78,300 @@ namespace NSRViewer
             FileSizeValLabel.Text = "<NULL>";
         }
 
-        public bool LoadNSRPreview(BinaryReader binaryReader, ref NSR NSRFile)
+        public bool LoadNSRPreview(BinaryReader binaryReader, ref NSR nsrFile)
         {
             // matrix_fury::RequestGhosts->Headers
 
             // description header
-            char[] NSRD = binaryReader.ReadChars(4);
-            NSRFile.Description_Header.version = binaryReader.ReadUInt32();
-            NSRFile.Description_Header.header_length = binaryReader.ReadUInt32();
-            NSRFile.Description_Header.meta_length = binaryReader.ReadUInt32();
-            NSRFile.Description_Header.description_length = binaryReader.ReadUInt32();
-            NSRFile.Description_Header.offset_data = binaryReader.ReadUInt32();
-            NSRFile.Description_Header.unk0 = binaryReader.ReadUInt32();
-            NSRFile.Description_Header.protocol_version = binaryReader.ReadUInt32();
-            NSRFile.Description_Header.microsecond_epoch = binaryReader.ReadUInt64(); // utc
-            NSRFile.Description_Header.unk1 = binaryReader.ReadUInt32();
-            NSRFile.Description_Header.unk2 = binaryReader.ReadUInt32();
+            char[] nsrDescription = binaryReader.ReadChars(4);
+            nsrFile.Description_Header.version = binaryReader.ReadUInt32();
+            nsrFile.Description_Header.header_length = binaryReader.ReadUInt32();
+            nsrFile.Description_Header.meta_length = binaryReader.ReadUInt32();
+            nsrFile.Description_Header.description_length = binaryReader.ReadUInt32();
+            nsrFile.Description_Header.offset_data = binaryReader.ReadUInt32();
+            nsrFile.Description_Header.unk0 = binaryReader.ReadUInt32();
+            nsrFile.Description_Header.protocol_version = binaryReader.ReadUInt32();
+            nsrFile.Description_Header.microsecond_epoch = binaryReader.ReadUInt64(); // utc
+            nsrFile.Description_Header.unk1 = binaryReader.ReadUInt32();
+            nsrFile.Description_Header.unk2 = binaryReader.ReadUInt32();
             // description header
 
             // index header
 
             // if the header_length is 48 bytes then the file is large and the index header is now split into filename*.nsr.index
-            if (NSRFile.Description_Header.header_length != 48)
+            if (nsrFile.Description_Header.header_length != 48)
             {
-                char[] NSRI = binaryReader.ReadChars(4);
+                char[] nsrIndex = binaryReader.ReadChars(4);
 
-                NSRFile.Index_Header.version = binaryReader.ReadUInt32();
-                NSRFile.Index_Header.unk0 = binaryReader.ReadUInt32();
-                NSRFile.Index_Header.unk1 = binaryReader.ReadUInt32();
-                NSRFile.Index_Header.count = binaryReader.ReadUInt32();
-                NSRFile.Index_Header.index_offset = binaryReader.ReadUInt32();
-                NSRFile.Index_Header.offsets = new uint[NSRFile.Index_Header.count];
-                for (int i = 0; i < NSRFile.Index_Header.count; i++)
-                    NSRFile.Index_Header.offsets[i] = binaryReader.ReadUInt32();
+                nsrFile.Index_Header.version = binaryReader.ReadUInt32();
+                nsrFile.Index_Header.unk0 = binaryReader.ReadUInt32();
+                nsrFile.Index_Header.unk1 = binaryReader.ReadUInt32();
+                nsrFile.Index_Header.count = binaryReader.ReadUInt32();
+                nsrFile.Index_Header.index_offset = binaryReader.ReadUInt32();
+                nsrFile.Index_Header.offsets = new uint[nsrFile.Index_Header.count];
+                for (int i = 0; i < nsrFile.Index_Header.count; i++)
+                    nsrFile.Index_Header.offsets[i] = binaryReader.ReadUInt32();
             }
             // index header
 
             // meta header
-            NSRFile.Meta_Header.version = binaryReader.ReadUInt32();
-            NSRFile.Meta_Header.zone_id = binaryReader.ReadUInt32();
-            NSRFile.Meta_Header.description = ReadToNull(ref binaryReader);
-            NSRFile.Meta_Header.recording_time = ReadToNull(ref binaryReader);
+            nsrFile.Meta_Header.version = binaryReader.ReadUInt32();
+            nsrFile.Meta_Header.zone_id = binaryReader.ReadUInt32();
+            nsrFile.Meta_Header.description = ReadToNull(ref binaryReader);
+            nsrFile.Meta_Header.recording_time = ReadToNull(ref binaryReader);
 
-            NSRFile.Meta_Header.position = new System.Numerics.Vector3(binaryReader.ReadSingle(), binaryReader.ReadSingle(), binaryReader.ReadSingle());
-            NSRFile.Meta_Header.rotation = new System.Numerics.Vector4(binaryReader.ReadSingle(), binaryReader.ReadSingle(), binaryReader.ReadSingle(), binaryReader.ReadSingle());
+            nsrFile.Meta_Header.position = new Vector3(binaryReader.ReadSingle(), binaryReader.ReadSingle(), binaryReader.ReadSingle());
+            nsrFile.Meta_Header.rotation = new Vector4(binaryReader.ReadSingle(), binaryReader.ReadSingle(), binaryReader.ReadSingle(), binaryReader.ReadSingle());
 
+            nsrFile.Meta_Header.character_guid = binaryReader.ReadUInt64();
+            nsrFile.Meta_Header.character_name = ReadToNull(ref binaryReader);
+            nsrFile.Meta_Header.unk3 = binaryReader.ReadBytes(18);
 
-            NSRFile.Meta_Header.character_guid = binaryReader.ReadUInt64();
-            NSRFile.Meta_Header.character_name = ReadToNull(ref binaryReader);
-            NSRFile.Meta_Header.unk3 = binaryReader.ReadBytes(18);
+            nsrFile.Meta_Header.firefall_version = ReadToNull(ref binaryReader);
 
-            NSRFile.Meta_Header.firefall_version = ReadToNull(ref binaryReader);
+            nsrFile.Meta_Header.microsecond_epoch = binaryReader.ReadUInt64();
+            nsrFile.Meta_Header.month_recording = binaryReader.ReadUInt32();
+            nsrFile.Meta_Header.day_recording = binaryReader.ReadUInt32();
+            nsrFile.Meta_Header.year_recording = binaryReader.ReadUInt32();
+            nsrFile.Meta_Header.year_lore = binaryReader.ReadUInt32();
+            nsrFile.Meta_Header.solar_time = binaryReader.ReadSingle(); // utc
 
-            NSRFile.Meta_Header.microsecond_epoch = binaryReader.ReadUInt64();
-            NSRFile.Meta_Header.month_recording = binaryReader.ReadUInt32();
-            NSRFile.Meta_Header.day_recording = binaryReader.ReadUInt32();
-            NSRFile.Meta_Header.year_recording = binaryReader.ReadUInt32();
-            NSRFile.Meta_Header.year_lore = binaryReader.ReadUInt32();
-            NSRFile.Meta_Header.solar_time = binaryReader.ReadSingle(); // utc
+            nsrFile.Meta_Header.game_time = ReadToNull(ref binaryReader);
 
-            NSRFile.Meta_Header.game_time = ReadToNull(ref binaryReader);
+            nsrFile.Meta_Header.padding = binaryReader.ReadBytes(128 - (nsrFile.Meta_Header.game_time.Length + 1));
 
-            NSRFile.Meta_Header.padding = binaryReader.ReadBytes(128 - (NSRFile.Meta_Header.game_time.Length + 1));
-
-            NSRFile.Meta_Header.unk4 = binaryReader.ReadBytes(31);
+            nsrFile.Meta_Header.unk4 = binaryReader.ReadBytes(31);
             // meta header
-            
+
             return true;
         }
 
-        public bool LoadNSR(BinaryReader binaryReader, ref NSR NSRFile)
+        public bool LoadNSR(BinaryReader binaryReader, ref NSR nsrFile)
         {
-            LoadNSRPreview(binaryReader, ref NSRFile);
-            NSRFile.raw_size = binaryReader.BaseStream.Length;
+            LoadNSRPreview(binaryReader, ref nsrFile);
+            nsrFile.raw_size = binaryReader.BaseStream.Length;
 
             try
             {
                 // ghosts - keyframe
                 while (binaryReader.BaseStream.Position < binaryReader.BaseStream.Length)
                 {
-                    NSR.KeyframeHeader KeyframeHeader = new NSR.KeyframeHeader();
+                    NSR.KeyframeHeader keyframeHeader = new NSR.KeyframeHeader
+                    {
+                        raw_position = binaryReader.BaseStream.Position,
+                        keyframe_order_0 = binaryReader.ReadUInt16(),
+                        keyframe_order_1 = binaryReader.ReadUInt16(),
+                        length = binaryReader.ReadUInt16(),
+                        unk0 = binaryReader.ReadUInt16(),
+                        id = new byte[8]
+                    };
 
-                    KeyframeHeader.raw_position = binaryReader.BaseStream.Position;
+                    keyframeHeader.id = binaryReader.ReadBytes(8);
+                    keyframeHeader.data_type = binaryReader.ReadByte();
+                    keyframeHeader.unk1 = binaryReader.ReadByte();
+                    keyframeHeader.data_count = binaryReader.ReadByte();
+                    keyframeHeader.data = new byte[keyframeHeader.length - 11];
 
-                    KeyframeHeader.keyframe_order_0 = binaryReader.ReadUInt16();
-                    KeyframeHeader.keyframe_order_1 = binaryReader.ReadUInt16();
-                    KeyframeHeader.length = binaryReader.ReadUInt16();
-                    KeyframeHeader.unk0 = binaryReader.ReadUInt16();
-                    KeyframeHeader.id = new byte[8];
-                    KeyframeHeader.id = binaryReader.ReadBytes(8);
-
-                    KeyframeHeader.data_type = binaryReader.ReadByte();
-                    KeyframeHeader.unk1 = binaryReader.ReadByte();
-                    KeyframeHeader.data_count = binaryReader.ReadByte();
-
-                    KeyframeHeader.data = new byte[KeyframeHeader.length - 11];
-                    switch (KeyframeHeader.id[0])
+                    switch (keyframeHeader.id[0])
                     {
                         case 0:
-                            KeyframeHeader.keyframe_type = "Generic";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "Generic";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
-
                         case 2:
-                            KeyframeHeader.keyframe_type = "Character_BaseController";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "Character_BaseController";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
                         case 3:
-                            KeyframeHeader.keyframe_type = "Character_NPCController";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "Character_NPCController";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
                         case 4:
-                            KeyframeHeader.keyframe_type = "Character_MissionAndMarkerController";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "Character_MissionAndMarkerController";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
                         case 5:
-                            KeyframeHeader.keyframe_type = "Character_CombatController";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "Character_CombatController";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
                         case 6:
-                            KeyframeHeader.keyframe_type = "Character_LocalEffectsController";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "Character_LocalEffectsController";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
                         case 7:
-                            KeyframeHeader.keyframe_type = "Character_SpectatorController";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "Character_SpectatorController";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
                         case 8:
-                            KeyframeHeader.keyframe_type = "Character_ObserverView";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "Character_ObserverView";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
                         case 9:
-                            KeyframeHeader.keyframe_type = "Character_EquipmentView";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "Character_EquipmentView";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
                         case 10:
-                            KeyframeHeader.keyframe_type = "Character_AIObserverView";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "Character_AIObserverView";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
                         case 11:
-                            KeyframeHeader.keyframe_type = "Character_Combat View";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "Character_Combat View";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
                         case 12:
-                            KeyframeHeader.keyframe_type = "Character_MovementView";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "Character_MovementView";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
                         case 13:
-                            KeyframeHeader.keyframe_type = "Character_TinyObjectView";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "Character_TinyObjectView";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
                         case 14:
-                            KeyframeHeader.keyframe_type = "Character_DynamicProjectileView";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "Character_DynamicProjectileView";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
-
                         case 16:
-                            KeyframeHeader.keyframe_type = "Melding_ObserverView";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "Melding_ObserverView";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
-
                         case 18:
-                            KeyframeHeader.keyframe_type = "MeldingBubble_ObserverView";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "MeldingBubble_ObserverView";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
-
                         case 20:
-                            KeyframeHeader.keyframe_type = "AreaVisualData_ObserverView";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "AreaVisualData_ObserverView";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
                         case 21:
-                            KeyframeHeader.keyframe_type = "AreaVisualData_ParticleEffectsView";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "AreaVisualData_ParticleEffectsView";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
                         case 22:
-                            KeyframeHeader.keyframe_type = "AreaVisualData_MapMarkerView";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "AreaVisualData_MapMarkerView";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
                         case 23:
-                            KeyframeHeader.keyframe_type = "AreaVisualData_TinyObjectView";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "AreaVisualData_TinyObjectView";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
                         case 24:
-                            KeyframeHeader.keyframe_type = "AreaVisualData_LootObjectView";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "AreaVisualData_LootObjectView";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
                         case 25:
-                            KeyframeHeader.keyframe_type = "AreaVisualData_ForceShieldView";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "AreaVisualData_ForceShieldView";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
-
                         case 27:
-                            KeyframeHeader.keyframe_type = "Vehicle_BaseController";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "Vehicle_BaseController";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
                         case 28:
-                            KeyframeHeader.keyframe_type = "Vehicle_CombatController";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "Vehicle_CombatController";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
                         case 29:
-                            KeyframeHeader.keyframe_type = "Vehicle_ObserverView";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "Vehicle_ObserverView";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
                         case 30:
-                            KeyframeHeader.keyframe_type = "Vehicle_CombatView";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "Vehicle_CombatView";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
                         case 31:
-                            KeyframeHeader.keyframe_type = "Vehicle_MovementView";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "Vehicle_MovementView";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
-
                         case 33:
-                            KeyframeHeader.keyframe_type = "Anchor_AIObserverView";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "Anchor_AIObserverView";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
-
                         case 35:
-                            KeyframeHeader.keyframe_type = "Deployable_ObserverView";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "Deployable_ObserverView";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
                         case 36:
-                            KeyframeHeader.keyframe_type = "Deployable_NPCObserverView";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "Deployable_NPCObserverView";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
                         case 37:
-                            KeyframeHeader.keyframe_type = "Deployable_HardpointView";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "Deployable_HardpointView";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
-
                         case 39:
-                            KeyframeHeader.keyframe_type = "Turret_BaseController";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "Turret_BaseController";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
                         case 40:
-                            KeyframeHeader.keyframe_type = "Turret_ObserverView";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "Turret_ObserverView";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
-
                         case 45:
-                            KeyframeHeader.keyframe_type = "Outpost_ObserverView";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "Outpost_ObserverView";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
-
                         case 48:
-                            KeyframeHeader.keyframe_type = "ResourceNode_ObserverView";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "ResourceNode_ObserverView";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
-
                         case 51:
-                            KeyframeHeader.keyframe_type = "CarryObject_ObserverView";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "CarryObject_ObserverView";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
-
                         case 53:
-                            KeyframeHeader.keyframe_type = "LootStoreExtension_LootObjectView";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = "LootStoreExtension_LootObjectView";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
                         default:
-                            KeyframeHeader.keyframe_type = $"<DEFAULT> [{KeyframeHeader.id[0]}]";
-                            KeyframeHeader.data = binaryReader.ReadBytes(KeyframeHeader.length - 11);
+                            keyframeHeader.keyframe_type = $"<DEFAULT> [{keyframeHeader.id[0]}]";
+                            keyframeHeader.data = binaryReader.ReadBytes(keyframeHeader.length - 11);
                             break;
                     }
-                    NSRFile.Keyframe_Headers.Add(KeyframeHeader);
+                    nsrFile.Keyframe_Headers.Add(keyframeHeader);
                 }
                 // ghosts - keyframe
             }
-            catch (EndOfStreamException e)
+            catch (EndOfStreamException exception)
             {
-                string Message = "";
-                Message += "Error reading GHOSTs. Would you like to attempt to still view successfully parsed ones?" + Environment.NewLine;
-                Message += Environment.NewLine + "---- GHOST ERROR ----" + Environment.NewLine + e.Message + Environment.NewLine;
-                Message += e.StackTrace + Environment.NewLine;
-                if (MessageBox.Show(Message, "Error readings Ghosts", MessageBoxButtons.YesNo, MessageBoxIcon.Error) == DialogResult.Yes)
+                string message = "";
+                message += "Error reading GHOSTs. Would you like to attempt to still view successfully parsed ones?" + Environment.NewLine;
+                message += Environment.NewLine + "---- GHOST ERROR ----" + Environment.NewLine + exception.Message + Environment.NewLine;
+                message += exception.StackTrace + Environment.NewLine;
+
+                if (MessageBox.Show(message, "Error readings Ghosts", MessageBoxButtons.YesNo, MessageBoxIcon.Error) == DialogResult.Yes)
                 {
-                    // perform specific ghost safe-load error handling if needed
-                    // currently returning what we have is good enough
+                    // TODO: Perform specific ghost safe-load error handling if needed
+                    // Currently returning what we have is good enough
                 }
                 else
                 {
                     return false;
                 }
             }
-            
+
             return true;
         }
 
-        string ReadToNull(ref BinaryReader b)
+        private static string ReadToNull(ref BinaryReader binaryReader)
         {
-            string RetVal = "";
+            string retVal = "";
             Int32 character;
-            while ((character = b.Read()) != -1)
+            while ((character = binaryReader.Read()) != -1)
             {
                 char c = (char)character;
                 if (character != '\0')
-                    RetVal += c;
+                {
+                    retVal += c;
+                }
                 else
+                {
                     break;
+                }
             }
-            return RetVal;
+            return retVal;
         }
 
-        static byte[] Decompress(byte[] gzip)
+        private static byte[] Decompress(byte[] gzip)
         {
             using (GZipStream stream = new GZipStream(new MemoryStream(gzip),
             CompressionMode.Decompress))
@@ -403,45 +399,43 @@ namespace NSRViewer
         {
             if (ReplayFileListBox.SelectedIndex > -1)
             {
-                using (FileStream compressed_stream_preview = new FileStream(ReplayFileListBox.SelectedItem.ToString(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                using (FileStream compressedStreamPreview = new FileStream(ReplayFileListBox.SelectedItem.ToString(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
-                    compressed_stream_preview.Position = compressed_stream_preview.Length - 4;
-                    byte[] length_bytes = new byte[4];
-                    compressed_stream_preview.Read(length_bytes, 0, 4);
-                    compressed_stream_preview.Position = 0;
-                    long raw_length = BitConverter.ToUInt32(length_bytes, 0);
-                    long comp_length = compressed_stream_preview.Length;
-                    using (GZipStream decompressed_stream = new GZipStream(compressed_stream_preview, CompressionMode.Decompress))
+                    compressedStreamPreview.Position = compressedStreamPreview.Length - 4;
+                    byte[] lengthBytes = new byte[4];
+                    compressedStreamPreview.Read(lengthBytes, 0, 4);
+                    compressedStreamPreview.Position = 0;
+                    long rawLength = BitConverter.ToUInt32(lengthBytes, 0);
+                    long compLength = compressedStreamPreview.Length;
+                    using (GZipStream decompressedStream = new GZipStream(compressedStreamPreview, CompressionMode.Decompress))
+                    using (BinaryReader b = new BinaryReader(decompressedStream, Encoding.UTF8))
                     {
-                        NSR NSRFile = new NSR();
-                        using (BinaryReader b = new BinaryReader(decompressed_stream, Encoding.UTF8))
+                        NSR nsrFile = new NSR();
+                        if (LoadNSRPreview(b, ref nsrFile) == false)
                         {
-                            if (LoadNSRPreview(b, ref NSRFile) == false)
-                            {
-                                ProtocolVersionValLabel.Text = "<NULL>";
-                                ZoneValLabel.Text = "<NULL>";
-                                DescriptionValLabel.Text = "<NULL>";
-                                DateValLabel.Text = "<NULL>";
-                                CharacterGUIDValLabel.Text = "<NULL>";
-                                UserValLabel.Text = "<NULL>";
-                                FirefallVersionValLabel.Text = "<NULL>";
-                                Date2ValLabel.Text = "<NULL>";
-                                FileSizeValLabel.Text = "<NULL>";
-                                MessageBox.Show("Error loading Network Stream Replay.");
-                            }
-                            else
-                            {
-                                // Set label text
-                                ProtocolVersionValLabel.Text = NSRFile.Description_Header.protocol_version.ToString();
-                                ZoneValLabel.Text = NSRFile.Meta_Header.zone.ToString();
-                                DescriptionValLabel.Text = NSRFile.Meta_Header.description;
-                                DateValLabel.Text = NSRFile.Meta_Header.recording_time;
-                                CharacterGUIDValLabel.Text = NSRFile.Meta_Header.character_guid.ToString();
-                                UserValLabel.Text = NSRFile.Meta_Header.character_name;
-                                FirefallVersionValLabel.Text = NSRFile.Meta_Header.firefall_version;
-                                Date2ValLabel.Text = NSRFile.Meta_Header.game_time;
-                                FileSizeValLabel.Text = $"{comp_length.ToString("N0")} bytes | {((raw_length / 1024f) / 1024f).ToString("N2")} MB RAW";
-                            }
+                            ProtocolVersionValLabel.Text = "<NULL>";
+                            ZoneValLabel.Text = "<NULL>";
+                            DescriptionValLabel.Text = "<NULL>";
+                            DateValLabel.Text = "<NULL>";
+                            CharacterGUIDValLabel.Text = "<NULL>";
+                            UserValLabel.Text = "<NULL>";
+                            FirefallVersionValLabel.Text = "<NULL>";
+                            Date2ValLabel.Text = "<NULL>";
+                            FileSizeValLabel.Text = "<NULL>";
+                            MessageBox.Show("Error loading Network Stream Replay.");
+                        }
+                        else
+                        {
+                            // Set label text
+                            ProtocolVersionValLabel.Text = nsrFile.Description_Header.protocol_version.ToString();
+                            ZoneValLabel.Text = nsrFile.Meta_Header.zone.ToString();
+                            DescriptionValLabel.Text = nsrFile.Meta_Header.description;
+                            DateValLabel.Text = nsrFile.Meta_Header.recording_time;
+                            CharacterGUIDValLabel.Text = nsrFile.Meta_Header.character_guid.ToString();
+                            UserValLabel.Text = nsrFile.Meta_Header.character_name;
+                            FirefallVersionValLabel.Text = nsrFile.Meta_Header.firefall_version;
+                            Date2ValLabel.Text = nsrFile.Meta_Header.game_time;
+                            FileSizeValLabel.Text = $"{compLength.ToString("N0")} bytes | {((rawLength / 1024f) / 1024f).ToString("N2")} MB RAW";
                         }
                     }
                 }
@@ -462,134 +456,147 @@ namespace NSRViewer
 
         private void ExportDecompressedFileBtn_Click(object sender, EventArgs e)
         {
-            if (ReplayFileListBox.SelectedIndex > -1)
+            if (ReplayFileListBox.SelectedIndex <= -1)
             {
-                SaveFileDialog SFD = new SaveFileDialog();
-                SFD.Filter = "Decompressed NSR Files (*.nsr_raw)|*.nsr_raw";
-                SFD.FileName = Path.GetFileNameWithoutExtension(ReplayFileListBox.SelectedItem.ToString()) + ".nsr_raw";
-                if (SFD.ShowDialog() == DialogResult.OK)
-                {
-                    byte[] compressed_file = File.ReadAllBytes(ReplayFileListBox.SelectedItem.ToString());
-                    byte[] decompressed_bytes = Decompress(compressed_file);
-                    File.WriteAllBytes(SFD.FileName, decompressed_bytes);
-                    MessageBox.Show("Export Complete.", "Export Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
+                return;
             }
+
+            SaveFileDialog saveFileDialog = new SaveFileDialog
+            {
+                Filter = "Decompressed NSR Files (*.nsr_raw)|*.nsr_raw",
+                FileName = Path.GetFileNameWithoutExtension(ReplayFileListBox.SelectedItem.ToString()) + ".nsr_raw"
+            };
+
+            if (saveFileDialog.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+
+            byte[] compressedFile = File.ReadAllBytes(ReplayFileListBox.SelectedItem.ToString());
+            byte[] decompressedBytes = Decompress(compressedFile);
+            File.WriteAllBytes(saveFileDialog.FileName, decompressedBytes);
+            MessageBox.Show("Export Complete.", "Export Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void CopyInfoBtn_Click(object sender, EventArgs e)
         {
-            if (ReplayFileListBox.SelectedIndex > -1)
+            if (ReplayFileListBox.SelectedIndex <= -1)
             {
-                string ClipboardString = "--- Network Stream Replay Information ---" + Environment.NewLine;
-                ClipboardString += "File: " + ReplayFileListBox.SelectedItem.ToString() + Environment.NewLine;
-                ClipboardString += "Protocol Version: " + ProtocolVersionValLabel.Text + Environment.NewLine;
-                ClipboardString += "Zone: " + ZoneValLabel.Text + Environment.NewLine;
-                ClipboardString += "Description: " + DescriptionValLabel.Text + Environment.NewLine;
-                ClipboardString += "Recording Date: " + DateValLabel.Text + Environment.NewLine;
-                ClipboardString += "Character GUID: " + CharacterGUIDValLabel.Text + Environment.NewLine;
-                ClipboardString += "Character Name: " + UserValLabel.Text + Environment.NewLine;
-                ClipboardString += "Firefall Version: " + FirefallVersionValLabel.Text + Environment.NewLine;
-                ClipboardString += "Game Date: " + Date2ValLabel.Text + Environment.NewLine;
-                ClipboardString += "File Size: " + FileSizeValLabel.Text + Environment.NewLine;
-
-                Clipboard.SetText(ClipboardString);
-                MessageBox.Show("Information Copied to Clipboard!", "Information Copied", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
             }
+
+            string clipboardString = "--- Network Stream Replay Information ---" + Environment.NewLine;
+            clipboardString += "File: " + ReplayFileListBox.SelectedItem.ToString() + Environment.NewLine;
+            clipboardString += "Protocol Version: " + ProtocolVersionValLabel.Text + Environment.NewLine;
+            clipboardString += "Zone: " + ZoneValLabel.Text + Environment.NewLine;
+            clipboardString += "Description: " + DescriptionValLabel.Text + Environment.NewLine;
+            clipboardString += "Recording Date: " + DateValLabel.Text + Environment.NewLine;
+            clipboardString += "Character GUID: " + CharacterGUIDValLabel.Text + Environment.NewLine;
+            clipboardString += "Character Name: " + UserValLabel.Text + Environment.NewLine;
+            clipboardString += "Firefall Version: " + FirefallVersionValLabel.Text + Environment.NewLine;
+            clipboardString += "Game Date: " + Date2ValLabel.Text + Environment.NewLine;
+            clipboardString += "File Size: " + FileSizeValLabel.Text + Environment.NewLine;
+
+            Clipboard.SetText(clipboardString);
+            MessageBox.Show("Information Copied to Clipboard!", "Information Copied", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void ViewGhostsBtn_Click(object sender, EventArgs e)
         {
-            if (ReplayFileListBox.SelectedIndex > -1)
+            if (ReplayFileListBox.SelectedIndex <= -1)
             {
-                // Display data collected from matrix_fury::RequestGhosts
-
-                // Full Load NSR
-                byte[] compressed_file = File.ReadAllBytes(ReplayFileListBox.SelectedItem.ToString()); // loads compressed size into memory
-                byte[] decompressed_bytes = Decompress(compressed_file); // loads raw size 2x into memory
-
-                // Done using compressed data now
-                compressed_file = null;
-
-                using (MemoryStream decompressed_stream = new MemoryStream(decompressed_bytes))
-                {
-                    NSR NSRFile = new NSR();
-                    using (BinaryReader decompressed_reader = new BinaryReader(decompressed_stream, Encoding.UTF8))
-                    {
-                        if (LoadNSR(decompressed_reader, ref NSRFile) == false) // loads raw size 2x into memory
-                        {
-                            MessageBox.Show("Error loading Network Stream Replay.");
-                        }
-                        else
-                        {
-                            // begin decompressed cleanup, they aren't going to be used again and are storing a lot of memory
-                            decompressed_reader.Dispose();
-                            decompressed_stream.Dispose();
-                            decompressed_bytes = null;
-
-                            Ghost_Info GhostInfo = new Ghost_Info();
-                            GhostInfo.SetInfo(ReplayFileListBox.SelectedItem.ToString(), ref NSRFile);
-
-                            GhostInfo.ShowDialog();
-
-                            // release NSR resources
-                            NSRFile = null;
-                        }
-                    }
-                    //MessageBox.Show(Ghosts, "Ghosts", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                }
-                // This doesn't happen often so should be safe to force now
-                GC.Collect(2);
+                return;
             }
+
+            // Display data collected from matrix_fury::RequestGhosts
+            // Full Load NSR
+            byte[] compressedFile = File.ReadAllBytes(ReplayFileListBox.SelectedItem.ToString()); // loads compressed size into memory
+            byte[] decompressedBytes = Decompress(compressedFile); // loads raw size 2x into memory
+
+            // Done using compressed data now
+            compressedFile = null;
+
+            using (MemoryStream decompressedStream = new MemoryStream(decompressedBytes))
+            using (BinaryReader decompressedReader = new BinaryReader(decompressedStream, Encoding.UTF8))
+            {
+                NSR nsrFile = new NSR();
+                if (LoadNSR(decompressedReader, ref nsrFile) == false) // loads raw size 2x into memory
+                {
+                    MessageBox.Show("Error loading Network Stream Replay.");
+                }
+                else
+                {
+                    // begin decompressed cleanup, they aren't going to be used again and are storing a lot of memory
+                    decompressedReader.Dispose();
+                    decompressedStream.Dispose();
+                    decompressedBytes = null;
+
+                    GhostInfo ghostInfo = new GhostInfo();
+                    ghostInfo.SetInfo(ReplayFileListBox.SelectedItem.ToString(), ref nsrFile);
+
+                    ghostInfo.ShowDialog();
+
+                    // release NSR resources
+                    nsrFile = null;
+                }
+            }
+            //MessageBox.Show(Ghosts, "Ghosts", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            // This doesn't happen often so should be safe to force now
+            GC.Collect(2);
         }
 
         private void ViewInFirefallBtn_Click(object sender, EventArgs e)
         {
             // NSR Default Action
             // "C:\WINDOWS\system32\cmd.exe" /q /c start "firefall" /D"C:\Firefall\system\bin" "C:\Firefall\system\bin\FirefallClient.exe" --open="C:\Replays\replay.nsr"
-            if (ReplayFileListBox.SelectedIndex > -1)
+            if (ReplayFileListBox.SelectedIndex <= -1)
             {
-                OpenFileDialog OFD = new OpenFileDialog();
-                OFD.Filter = "Firefall Client (*.exe)|*.exe";
-                OFD.Title = "Select Firefall Client to view NSR file with...";
-                if (OFD.ShowDialog() == DialogResult.OK)
-                {
-                    System.Diagnostics.ProcessStartInfo StartInfo = new System.Diagnostics.ProcessStartInfo();
-                    FileInfo ClientInfo = new FileInfo(OFD.FileName);
-                    StartInfo.WorkingDirectory = ClientInfo.DirectoryName;
-                    StartInfo.FileName = ClientInfo.Name;
-                    StartInfo.Arguments = $"--open=\"{ReplayFileListBox.SelectedItem.ToString()}\"";
-                    System.Diagnostics.Process.Start(StartInfo);
-                    MessageBox.Show("Firefall Launched");
-                }
+                return;
             }
+
+            OpenFileDialog ofd = new OpenFileDialog
+            {
+                Filter = "Firefall Client (*.exe)|*.exe",
+                Title = "Select Firefall Client to view NSR file with..."
+            };
+
+            if (ofd.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+
+            System.Diagnostics.ProcessStartInfo startInfo = new System.Diagnostics.ProcessStartInfo();
+            FileInfo clientInfo = new FileInfo(ofd.FileName);
+            startInfo.WorkingDirectory = clientInfo.DirectoryName;
+            startInfo.FileName = clientInfo.Name;
+            startInfo.Arguments = $"--open=\"{ReplayFileListBox.SelectedItem}\"";
+            System.Diagnostics.Process.Start(startInfo);
+            MessageBox.Show("Firefall Launched");
         }
 
         private void ReplayFileListBox_DragEnter(object sender, DragEventArgs e)
         {
-            if (e.Data.GetDataPresent(DataFormats.FileDrop))
-            {
-                e.Effect = DragDropEffects.All;
-            }
-            else
-            {
-                e.Effect = DragDropEffects.None;
-            }
+            e.Effect = e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.All : DragDropEffects.None;
         }
 
         private void ReplayFileListBox_DragDrop(object sender, DragEventArgs e)
         {
-            string[] Files = (string[])e.Data.GetData(DataFormats.FileDrop, false);
-            if (Files.Length == 1)
+            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop, false);
+            if (files.Length == 1)
             {
-                string FileDirectoryPath = "";
-                if (File.Exists(Files[0]))
-                    FileDirectoryPath = new FileInfo(Files[0]).DirectoryName;
-                else if (Directory.Exists(Files[0]))
-                    FileDirectoryPath = Files[0];
-                if (MessageBox.Show($"Open directory [{FileDirectoryPath}] ?", "Open NSR Directory", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                string fileDirectoryPath = "";
+                if (File.Exists(files[0]))
                 {
-                    LoadNSRDirectory(FileDirectoryPath);
+                    fileDirectoryPath = new FileInfo(files[0]).DirectoryName;
+                }
+                else if (Directory.Exists(files[0]))
+                {
+                    fileDirectoryPath = files[0];
+                }
+
+                if (MessageBox.Show($"Open directory [{fileDirectoryPath}] ?", "Open NSR Directory", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                {
+                    LoadNSRDirectory(fileDirectoryPath);
                     ReplayFileListBox.Focus();
                 }
             }
@@ -602,22 +609,28 @@ namespace NSRViewer
         private void CopyFilePathToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (ReplayFileListBox.SelectedIndex > -1)
+            {
                 Clipboard.SetText(ReplayFileListBox.SelectedItem.ToString());
+            }
         }
 
         private void OpenInFileExplorerToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (ReplayFileListBox.SelectedIndex > -1)
-                System.Diagnostics.Process.Start("explorer.exe", "/select,\"" + ReplayFileListBox.SelectedItem.ToString() + "\"");
+            {
+                System.Diagnostics.Process.Start("explorer.exe", "/select,\"" + ReplayFileListBox.SelectedItem + "\"");
+            }
         }
 
         private void SearchFilesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (ReplayFileListBox.Items.Count > 0)
+            if (ReplayFileListBox.Items.Count <= 0)
             {
-                Searcher Search_Form = new Searcher();
-                Search_Form.ShowDialog(this);
+                return;
             }
+
+            Searcher searchForm = new Searcher();
+            searchForm.ShowDialog(this);
         }
     }
 
@@ -655,22 +668,14 @@ namespace NSRViewer
         {
             public uint version;
             public uint zone_id;
-            public string zone
-            {
-                get {
-                    if (ZONES.ContainsKey(zone_id))
-                        return ZONES[zone_id].ToString() + " (" + zone_id.ToString() + ")";
-                    else
-                        return zone_id.ToString();
-                }
-            }
+            public string zone => Zones.ContainsKey(zone_id) ? $"{Zones[zone_id]} ({zone_id})" : zone_id.ToString();
             public string description;
             public string recording_time;
             //public uint unk1; // pos
             //public float[] unk2; // rot
 
-            public System.Numerics.Vector3 position;
-            public System.Numerics.Vector4 rotation;
+            public Vector3 position;
+            public Vector4 rotation;
 
             public UInt64 character_guid;
             public string character_name;
@@ -725,7 +730,7 @@ namespace NSRViewer
         }
         public List<KeyframeHeader> Keyframe_Headers;
 
-        static public Dictionary<uint, string> ZONES = new Dictionary<uint, string>()
+        public static Dictionary<uint, string> Zones = new Dictionary<uint, string>()
         {
             { 1, "Thumper" },
             { 2, "Joshs Super Mountains" },
