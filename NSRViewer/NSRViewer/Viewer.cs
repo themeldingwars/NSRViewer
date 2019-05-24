@@ -67,15 +67,7 @@ namespace NSRViewer
                 ReplayFileListBox.Items.Add(item);
             }
 
-            ProtocolVersionValLabel.Text = "<NULL>";
-            ZoneValLabel.Text = "<NULL>";
-            DescriptionValLabel.Text = "<NULL>";
-            DateValLabel.Text = "<NULL>";
-            CharacterGUIDValLabel.Text = "<NULL>";
-            UserValLabel.Text = "<NULL>";
-            FirefallVersionValLabel.Text = "<NULL>";
-            Date2ValLabel.Text = "<NULL>";
-            FileSizeValLabel.Text = "<NULL>";
+            ResetLabelText();
         }
 
         public bool LoadNSRPreview(BinaryReader binaryReader, ref NSR nsrFile)
@@ -352,6 +344,19 @@ namespace NSRViewer
             return true;
         }
 
+        private void ResetLabelText()
+        {
+            ProtocolVersionValLabel.Text = "<NULL>";
+            ZoneValLabel.Text = "<NULL>";
+            DescriptionValLabel.Text = "<NULL>";
+            DateValLabel.Text = "<NULL>";
+            CharacterGUIDValLabel.Text = "<NULL>";
+            UserValLabel.Text = "<NULL>";
+            FirefallVersionValLabel.Text = "<NULL>";
+            Date2ValLabel.Text = "<NULL>";
+            FileSizeValLabel.Text = "<NULL>";
+        }
+
         private static string ReadToNull(ref BinaryReader binaryReader)
         {
             string retVal = "";
@@ -373,84 +378,55 @@ namespace NSRViewer
 
         private static byte[] Decompress(byte[] gzip)
         {
-            using (GZipStream stream = new GZipStream(new MemoryStream(gzip),
-            CompressionMode.Decompress))
+            using (MemoryStream compressedStream = new MemoryStream(gzip))
+            using (GZipStream gZipStream = new GZipStream(compressedStream, CompressionMode.Decompress))
+            using (MemoryStream decompressedStream = new MemoryStream())
             {
-                const int size = 4096;
-                byte[] buffer = new byte[size];
-                using (MemoryStream memory = new MemoryStream())
-                {
-                    int count = 0;
-                    do
-                    {
-                        count = stream.Read(buffer, 0, size);
-                        if (count > 0)
-                        {
-                            memory.Write(buffer, 0, count);
-                        }
-                    }
-                    while (count > 0);
-                    return memory.ToArray();
-                }
+                gZipStream.CopyTo(decompressedStream);
+                return decompressedStream.ToArray();
             }
         }
 
         private void ReplayFileListBox_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (ReplayFileListBox.SelectedIndex > -1)
+            ResetLabelText();
+
+            if (ReplayFileListBox.SelectedIndex <= -1)
             {
-                using (FileStream compressedStreamPreview = new FileStream(ReplayFileListBox.SelectedItem.ToString(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-                {
-                    compressedStreamPreview.Position = compressedStreamPreview.Length - 4;
-                    byte[] lengthBytes = new byte[4];
-                    compressedStreamPreview.Read(lengthBytes, 0, 4);
-                    compressedStreamPreview.Position = 0;
-                    long rawLength = BitConverter.ToUInt32(lengthBytes, 0);
-                    long compLength = compressedStreamPreview.Length;
-                    using (GZipStream decompressedStream = new GZipStream(compressedStreamPreview, CompressionMode.Decompress))
-                    using (BinaryReader b = new BinaryReader(decompressedStream, Encoding.UTF8))
-                    {
-                        NSR nsrFile = new NSR();
-                        if (LoadNSRPreview(b, ref nsrFile) == false)
-                        {
-                            ProtocolVersionValLabel.Text = "<NULL>";
-                            ZoneValLabel.Text = "<NULL>";
-                            DescriptionValLabel.Text = "<NULL>";
-                            DateValLabel.Text = "<NULL>";
-                            CharacterGUIDValLabel.Text = "<NULL>";
-                            UserValLabel.Text = "<NULL>";
-                            FirefallVersionValLabel.Text = "<NULL>";
-                            Date2ValLabel.Text = "<NULL>";
-                            FileSizeValLabel.Text = "<NULL>";
-                            MessageBox.Show("Error loading Network Stream Replay.");
-                        }
-                        else
-                        {
-                            // Set label text
-                            ProtocolVersionValLabel.Text = nsrFile.Description_Header.protocol_version.ToString();
-                            ZoneValLabel.Text = nsrFile.Meta_Header.zone.ToString();
-                            DescriptionValLabel.Text = nsrFile.Meta_Header.description;
-                            DateValLabel.Text = nsrFile.Meta_Header.recording_time;
-                            CharacterGUIDValLabel.Text = nsrFile.Meta_Header.character_guid.ToString();
-                            UserValLabel.Text = nsrFile.Meta_Header.character_name;
-                            FirefallVersionValLabel.Text = nsrFile.Meta_Header.firefall_version;
-                            Date2ValLabel.Text = nsrFile.Meta_Header.game_time;
-                            FileSizeValLabel.Text = $"{compLength.ToString("N0")} bytes | {((rawLength / 1024f) / 1024f).ToString("N2")} MB RAW";
-                        }
-                    }
-                }
+                return;
             }
-            else
+
+            using (FileStream compressedStreamPreview = new FileStream(ReplayFileListBox.SelectedItem.ToString(), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
-                ProtocolVersionValLabel.Text = "<NULL>";
-                ZoneValLabel.Text = "<NULL>";
-                DescriptionValLabel.Text = "<NULL>";
-                DateValLabel.Text = "<NULL>";
-                CharacterGUIDValLabel.Text = "<NULL>";
-                UserValLabel.Text = "<NULL>";
-                FirefallVersionValLabel.Text = "<NULL>";
-                Date2ValLabel.Text = "<NULL>";
-                FileSizeValLabel.Text = "<NULL>";
+                compressedStreamPreview.Position = compressedStreamPreview.Length - 4;
+                byte[] lengthBytes = new byte[4];
+                compressedStreamPreview.Read(lengthBytes, 0, 4);
+                compressedStreamPreview.Position = 0;
+
+                using (GZipStream decompressedStream = new GZipStream(compressedStreamPreview, CompressionMode.Decompress))
+                using (BinaryReader b = new BinaryReader(decompressedStream, Encoding.UTF8))
+                {
+                    NSR nsrFile = new NSR();
+                    if (!LoadNSRPreview(b, ref nsrFile))
+                    {
+                        MessageBox.Show("Error loading Network Stream Replay.");
+                        return;
+                    }
+
+                    long rawLength = BitConverter.ToUInt32(lengthBytes, 0);
+                    long compressedLength = compressedStreamPreview.Length;
+
+                    // Set label text
+                    ProtocolVersionValLabel.Text = nsrFile.Description_Header.protocol_version.ToString();
+                    ZoneValLabel.Text = nsrFile.Meta_Header.zone.ToString();
+                    DescriptionValLabel.Text = nsrFile.Meta_Header.description;
+                    DateValLabel.Text = nsrFile.Meta_Header.recording_time;
+                    CharacterGUIDValLabel.Text = nsrFile.Meta_Header.character_guid.ToString();
+                    UserValLabel.Text = nsrFile.Meta_Header.character_name;
+                    FirefallVersionValLabel.Text = nsrFile.Meta_Header.firefall_version;
+                    Date2ValLabel.Text = nsrFile.Meta_Header.game_time;
+                    FileSizeValLabel.Text = $"{compressedLength.ToString("N0")} bytes | {((rawLength / 1024f) / 1024f).ToString("N2")} MB RAW";
+                }
             }
         }
 
@@ -541,6 +517,7 @@ namespace NSRViewer
                 }
             }
             //MessageBox.Show(Ghosts, "Ghosts", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
             // This doesn't happen often so should be safe to force now
             GC.Collect(2);
         }
