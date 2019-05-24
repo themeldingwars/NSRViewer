@@ -53,6 +53,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="NSR\DescriptionHeader.cs" />
+    <Compile Include="NSR\IndexHeader.cs" />
+    <Compile Include="NSR\KeyframeHeader.cs" />
+    <Compile Include="NSR\MetaHeader.cs" />
+    <Compile Include="NSR\NSR.cs" />
     <Compile Include="Searcher.cs">
       <SubType>Form</SubType>
     </Compile>

@@ -37,7 +37,7 @@ namespace NSRViewer
                 using (GZipStream decompressedStream = new GZipStream(compressedStreamPreview, CompressionMode.Decompress))
                 using (BinaryReader binaryReader = new BinaryReader(decompressedStream, Encoding.UTF8))
                 {
-                    NSR nsrFile = new NSR();
+                    NSR.NSR nsrFile = new NSR.NSR();
                     if (owningForm.LoadNSRPreview(binaryReader, ref nsrFile) == false)
                     {
                         if (errorMessage == "")
@@ -53,108 +53,108 @@ namespace NSRViewer
                             case 0:
                                 if (_searchType == 0)
                                 {
-                                    if (nsrFile.Description_Header.protocol_version.ToString().IndexOf(searchString, 0, StringComparison.CurrentCultureIgnoreCase) > -1)
+                                    if (nsrFile.DescriptionHeader.ProtocolVersion.ToString().IndexOf(searchString, 0, StringComparison.CurrentCultureIgnoreCase) > -1)
                                         resultsList.Add(file);
                                 }
                                 else
                                 {
-                                    if (nsrFile.Description_Header.protocol_version.ToString().Equals(searchString))
+                                    if (nsrFile.DescriptionHeader.ProtocolVersion.ToString().Equals(searchString))
                                         resultsList.Add(file);
                                 }
                                 break;
                             case 1:
                                 if (_searchType == 0)
                                 {
-                                    if (nsrFile.Meta_Header.zone_id.ToString().IndexOf(searchString, 0, StringComparison.CurrentCultureIgnoreCase) > -1)
+                                    if (nsrFile.MetaHeader.ZoneId.ToString().IndexOf(searchString, 0, StringComparison.CurrentCultureIgnoreCase) > -1)
                                         resultsList.Add(file);
                                 }
                                 else
                                 {
-                                    if (nsrFile.Meta_Header.zone_id.ToString().Equals(searchString))
+                                    if (nsrFile.MetaHeader.ZoneId.ToString().Equals(searchString))
                                         resultsList.Add(file);
                                 }
                                 break;
                             case 2:
                                 if (_searchType == 0)
                                 {
-                                    if (nsrFile.Meta_Header.zone.ToString().IndexOf(searchString, 0, StringComparison.CurrentCultureIgnoreCase) > -1)
+                                    if (nsrFile.MetaHeader.Zone.ToString().IndexOf(searchString, 0, StringComparison.CurrentCultureIgnoreCase) > -1)
                                         resultsList.Add(file);
                                 }
                                 else
                                 {
-                                    if (nsrFile.Meta_Header.zone.ToString().Equals(searchString))
+                                    if (nsrFile.MetaHeader.Zone.ToString().Equals(searchString))
                                         resultsList.Add(file);
                                 }
                                 break;
                             case 3:
                                 if (_searchType == 0)
                                 {
-                                    if (nsrFile.Meta_Header.description.IndexOf(searchString, 0, StringComparison.CurrentCultureIgnoreCase) > -1)
+                                    if (nsrFile.MetaHeader.Description.IndexOf(searchString, 0, StringComparison.CurrentCultureIgnoreCase) > -1)
                                         resultsList.Add(file);
                                 }
                                 else
                                 {
-                                    if (nsrFile.Meta_Header.description.Equals(searchString))
+                                    if (nsrFile.MetaHeader.Description.Equals(searchString))
                                         resultsList.Add(file);
                                 }
                                 break;
                             case 4:
                                 if (_searchType == 0)
                                 {
-                                    if (nsrFile.Meta_Header.recording_time.IndexOf(searchString, 0, StringComparison.CurrentCultureIgnoreCase) > -1)
+                                    if (nsrFile.MetaHeader.RecordingTime.IndexOf(searchString, 0, StringComparison.CurrentCultureIgnoreCase) > -1)
                                         resultsList.Add(file);
                                 }
                                 else
                                 {
-                                    if (nsrFile.Meta_Header.recording_time.Equals(searchString))
+                                    if (nsrFile.MetaHeader.RecordingTime.Equals(searchString))
                                         resultsList.Add(file);
                                 }
                                 break;
                             case 5:
                                 if (_searchType == 0)
                                 {
-                                    if (nsrFile.Meta_Header.character_guid.ToString().IndexOf(searchString, 0, StringComparison.CurrentCultureIgnoreCase) > -1)
+                                    if (nsrFile.MetaHeader.CharacterGuid.ToString().IndexOf(searchString, 0, StringComparison.CurrentCultureIgnoreCase) > -1)
                                         resultsList.Add(file);
                                 }
                                 else
                                 {
-                                    if (nsrFile.Meta_Header.character_guid.ToString().Equals(searchString))
+                                    if (nsrFile.MetaHeader.CharacterGuid.ToString().Equals(searchString))
                                         resultsList.Add(file);
                                 }
                                 break;
                             case 6:
                                 if (_searchType == 0)
                                 {
-                                    if (nsrFile.Meta_Header.character_name.IndexOf(searchString, 0, StringComparison.CurrentCultureIgnoreCase) > -1)
+                                    if (nsrFile.MetaHeader.CharacterName.IndexOf(searchString, 0, StringComparison.CurrentCultureIgnoreCase) > -1)
                                         resultsList.Add(file);
                                 }
                                 else
                                 {
-                                    if (nsrFile.Meta_Header.character_name.Equals(searchString))
+                                    if (nsrFile.MetaHeader.CharacterName.Equals(searchString))
                                         resultsList.Add(file);
                                 }
                                 break;
                             case 7:
                                 if (_searchType == 0)
                                 {
-                                    if (nsrFile.Meta_Header.firefall_version.IndexOf(searchString, 0, StringComparison.CurrentCultureIgnoreCase) > -1)
+                                    if (nsrFile.MetaHeader.FirefallVersion.IndexOf(searchString, 0, StringComparison.CurrentCultureIgnoreCase) > -1)
                                         resultsList.Add(file);
                                 }
                                 else
                                 {
-                                    if (nsrFile.Meta_Header.firefall_version.Equals(searchString))
+                                    if (nsrFile.MetaHeader.FirefallVersion.Equals(searchString))
                                         resultsList.Add(file);
                                 }
                                 break;
                             case 8:
                                 if (_searchType == 0)
                                 {
-                                    if (nsrFile.Meta_Header.game_time.IndexOf(searchString, 0, StringComparison.CurrentCultureIgnoreCase) > -1)
+                                    if (nsrFile.MetaHeader.GameTime.IndexOf(searchString, 0, StringComparison.CurrentCultureIgnoreCase) > -1)
                                         resultsList.Add(file);
                                 }
                                 else
                                 {
-                                    if (nsrFile.Meta_Header.game_time.Equals(searchString))
+                                    if (nsrFile.MetaHeader.GameTime.Equals(searchString))
                                         resultsList.Add(file);
                                 }
                                 break;

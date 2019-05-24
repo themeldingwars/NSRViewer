@@ -9,7 +9,7 @@ namespace NSRViewer
     {
         private List<NSR.KeyframeHeader> _cachedKeyframeList = new List<NSR.KeyframeHeader>();
         private readonly Label _loadingPacifier;
-        private NSR _tempNSRFile = new NSR();
+        private NSR.NSR _tempNSRFile = new NSR.NSR();
 
         public GhostInfo()
         {
@@ -37,7 +37,7 @@ namespace NSRViewer
             _loadingPacifier.BringToFront();
         }
 
-        public void SetInfo(string fileName, ref NSR nsrFile)
+        public void SetInfo(string fileName, ref NSR.NSR nsrFile)
         {
             _loadingPacifier.Visible = true;
             Refresh();
@@ -46,8 +46,8 @@ namespace NSRViewer
             _cachedKeyframeList = new List<NSR.KeyframeHeader>();
 
             GhostInfoGroupBox.Text = fileName;
-            RawSizeValLabel.Text = ((nsrFile.raw_size / 1024f) / 1024f).ToString("N2") + " MB";
-            KeyframesValLabel.Text = nsrFile.Keyframe_Headers.Count.ToString("N0");
+            RawSizeValLabel.Text = ((nsrFile.RawSize / 1024f) / 1024f).ToString("N2") + " MB";
+            KeyframesValLabel.Text = nsrFile.KeyframeHeaders.Count.ToString("N0");
 
             _tempNSRFile = nsrFile;
         }
@@ -58,7 +58,7 @@ namespace NSRViewer
             Refresh();
 
             DateTime startBenchmark = DateTime.Now;
-            _cachedKeyframeList.AddRange(_tempNSRFile.Keyframe_Headers);
+            _cachedKeyframeList.AddRange(_tempNSRFile.KeyframeHeaders);
             _tempNSRFile = null;
             KeyframesListBox.VirtualMode = true;
             KeyframesListBox.VirtualListSize = _cachedKeyframeList.Capacity;
@@ -86,7 +86,7 @@ namespace NSRViewer
         {
             ListViewItem listViewItem = new ListViewItem
             {
-                Text = e.ItemIndex + " - " + _cachedKeyframeList[e.ItemIndex].keyframe_type
+                Text = e.ItemIndex + " - " + _cachedKeyframeList[e.ItemIndex].KeyframeType
             };
             e.Item = listViewItem;
         }
