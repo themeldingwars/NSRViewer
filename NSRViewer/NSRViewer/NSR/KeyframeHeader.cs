@@ -35,8 +35,11 @@ namespace NSRViewer.NSR
         [DisplayName("Keyframe Type"), Description("Type of keyframe based on first byte of keyframe")]
         public string KeyframeType { get; set; }
 
-        [DisplayName("Keyframe Position"), Description("Position of the keyframe in the raw file")]
+        [DisplayName("Keyframe Raw Position"), Description("Position of the keyframe in the raw file")]
         public long RawPosition { get; set; }
+
+        [DisplayName("Keyframe Position"), Description("Position of the keyframe in the list")]
+        public long KeyframePosition { get; set; }
 
         public static string MapKeyframeTypes(uint typeId)
         {

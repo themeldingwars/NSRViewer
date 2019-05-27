@@ -30,12 +30,15 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(GhostInfo));
             this.GhostInfoGroupBox = new System.Windows.Forms.GroupBox();
+            this.FilterComboBox = new System.Windows.Forms.ComboBox();
             this.KeyframesListBox = new System.Windows.Forms.ListView();
             this.GhostPropertyGrid = new System.Windows.Forms.PropertyGrid();
             this.KeyframesValLabel = new System.Windows.Forms.Label();
             this.KeyframesLabel = new System.Windows.Forms.Label();
             this.RawSizeValLabel = new System.Windows.Forms.Label();
             this.RawSizeLabel = new System.Windows.Forms.Label();
+            this.FilteredKeyframesLabel = new System.Windows.Forms.Label();
+            this.FilteredKeyframesValLabel = new System.Windows.Forms.Label();
             this.GhostInfoGroupBox.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -44,6 +47,9 @@
             this.GhostInfoGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.GhostInfoGroupBox.Controls.Add(this.FilteredKeyframesValLabel);
+            this.GhostInfoGroupBox.Controls.Add(this.FilteredKeyframesLabel);
+            this.GhostInfoGroupBox.Controls.Add(this.FilterComboBox);
             this.GhostInfoGroupBox.Controls.Add(this.KeyframesListBox);
             this.GhostInfoGroupBox.Controls.Add(this.GhostPropertyGrid);
             this.GhostInfoGroupBox.Controls.Add(this.KeyframesValLabel);
@@ -57,6 +63,21 @@
             this.GhostInfoGroupBox.TabIndex = 0;
             this.GhostInfoGroupBox.TabStop = false;
             this.GhostInfoGroupBox.Text = "<File>";
+            // 
+            // FilterComboBox
+            // 
+            this.FilterComboBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.FilterComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.Suggest;
+            this.FilterComboBox.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(50)))), ((int)(((byte)(50)))), ((int)(((byte)(50)))));
+            this.FilterComboBox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.FilterComboBox.ForeColor = System.Drawing.Color.DarkGray;
+            this.FilterComboBox.FormattingEnabled = true;
+            this.FilterComboBox.Location = new System.Drawing.Point(356, 42);
+            this.FilterComboBox.Name = "FilterComboBox";
+            this.FilterComboBox.Size = new System.Drawing.Size(388, 23);
+            this.FilterComboBox.TabIndex = 6;
+            this.FilterComboBox.TextChanged += new System.EventHandler(this.FilterComboBox_TextChanged);
             // 
             // KeyframesListBox
             // 
@@ -109,11 +130,9 @@
             // 
             // KeyframesValLabel
             // 
-            this.KeyframesValLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.KeyframesValLabel.Location = new System.Drawing.Point(123, 42);
             this.KeyframesValLabel.Name = "KeyframesValLabel";
-            this.KeyframesValLabel.Size = new System.Drawing.Size(621, 23);
+            this.KeyframesValLabel.Size = new System.Drawing.Size(234, 23);
             this.KeyframesValLabel.TabIndex = 3;
             this.KeyframesValLabel.Text = "<NULL>";
             this.KeyframesValLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -129,11 +148,9 @@
             // 
             // RawSizeValLabel
             // 
-            this.RawSizeValLabel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
             this.RawSizeValLabel.Location = new System.Drawing.Point(123, 19);
             this.RawSizeValLabel.Name = "RawSizeValLabel";
-            this.RawSizeValLabel.Size = new System.Drawing.Size(621, 23);
+            this.RawSizeValLabel.Size = new System.Drawing.Size(234, 23);
             this.RawSizeValLabel.TabIndex = 1;
             this.RawSizeValLabel.Text = "<NULL>";
             this.RawSizeValLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -147,7 +164,25 @@
             this.RawSizeLabel.Text = "Raw Size:";
             this.RawSizeLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
-            // Ghost_Info
+            // FilteredKeyframesLabel
+            // 
+            this.FilteredKeyframesLabel.Location = new System.Drawing.Point(356, 19);
+            this.FilteredKeyframesLabel.Name = "FilteredKeyframesLabel";
+            this.FilteredKeyframesLabel.Size = new System.Drawing.Size(111, 23);
+            this.FilteredKeyframesLabel.TabIndex = 7;
+            this.FilteredKeyframesLabel.Text = "Filtered Keyframes:";
+            this.FilteredKeyframesLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // FilteredKeyframesValLabel
+            // 
+            this.FilteredKeyframesValLabel.Location = new System.Drawing.Point(473, 19);
+            this.FilteredKeyframesValLabel.Name = "FilteredKeyframesValLabel";
+            this.FilteredKeyframesValLabel.Size = new System.Drawing.Size(234, 23);
+            this.FilteredKeyframesValLabel.TabIndex = 8;
+            this.FilteredKeyframesValLabel.Text = "<NULL>";
+            this.FilteredKeyframesValLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // GhostInfo
             // 
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(30)))), ((int)(((byte)(30)))), ((int)(((byte)(30)))));
@@ -176,5 +211,8 @@
         private System.Windows.Forms.Label KeyframesLabel;
         private System.Windows.Forms.PropertyGrid GhostPropertyGrid;
         private System.Windows.Forms.ListView KeyframesListBox;
+        private System.Windows.Forms.ComboBox FilterComboBox;
+        private System.Windows.Forms.Label FilteredKeyframesValLabel;
+        private System.Windows.Forms.Label FilteredKeyframesLabel;
     }
 }

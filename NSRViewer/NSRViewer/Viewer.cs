@@ -166,6 +166,7 @@ namespace NSRViewer
                     keyframeHeader.Data = new byte[keyframeHeader.Length - 11];
                     keyframeHeader.Data = binaryReader.ReadBytes(keyframeHeader.Length - 11);
                     keyframeHeader.KeyframeType = NSR.KeyframeHeader.MapKeyframeTypes(keyframeHeader.Id[0]);
+                    keyframeHeader.KeyframePosition = nsrFile.KeyframeHeaders.Count;
 
                     nsrFile.KeyframeHeaders.Add(keyframeHeader);
                 }
