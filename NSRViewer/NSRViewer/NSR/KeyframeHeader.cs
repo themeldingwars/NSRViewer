@@ -55,7 +55,7 @@ namespace NSRViewer.NSR
             {8, "Character_ObserverView"},
             {9, "Character_EquipmentView"},
             {10, "Character_AIObserverView"},
-            {11, "Character_Combat View"},
+            {11, "Character_CombatView"},
             {12, "Character_MovementView"},
             {13, "Character_TinyObjectView"},
             {14, "Character_DynamicProjectileView"},
