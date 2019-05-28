@@ -49,6 +49,7 @@ namespace NSRViewer.NSR
         private static readonly Dictionary<uint, string> KeyframeTypes = new Dictionary<uint, string>
         {
             {0, "Generic"},
+            {1, "Character"},
             {2, "Character_BaseController"},
             {3, "Character_NPCController"},
             {4, "Character_MissionAndMarkerController"},
@@ -62,29 +63,46 @@ namespace NSRViewer.NSR
             {12, "Character_MovementView"},
             {13, "Character_TinyObjectView"},
             {14, "Character_DynamicProjectileView"},
+            {15, "Melding"},
             {16, "Melding_ObserverView"},
+            {17, "MeldingBubble"},
             {18, "MeldingBubble_ObserverView"},
+            {19, "AreaVisualData"},
             {20, "AreaVisualData_ObserverView"},
             {21, "AreaVisualData_ParticleEffectsView"},
             {22, "AreaVisualData_MapMarkerView"},
             {23, "AreaVisualData_TinyObjectView"},
             {24, "AreaVisualData_LootObjectView"},
             {25, "AreaVisualData_ForceShieldView"},
+            {26, "Vehicle"},
             {27, "Vehicle_BaseController"},
             {28, "Vehicle_CombatController"},
             {29, "Vehicle_ObserverView"},
             {30, "Vehicle_CombatView"},
             {31, "Vehicle_MovementView"},
+            {32, "Anchor"},
             {33, "Anchor_AIObserverView"},
+            {34, "Deployable"},
             {35, "Deployable_ObserverView"},
             {36, "Deployable_NPCObserverView"},
             {37, "Deployable_HardpointView"},
+            {38, "Turret"},
             {39, "Turret_BaseController"},
             {40, "Turret_ObserverView"},
+
+
+
+
             {45, "Outpost_ObserverView"},
+
+
             {48, "ResourceNode_ObserverView"},
+
+
             {51, "CarryObject_ObserverView"},
+
             {53, "LootStoreExtension_LootObjectView"},
+
         };
     }
 }
