@@ -7,4 +7,5 @@ Features:
 
 * Export Decompressed NSR Files
 * View Keyframe GHOSTS of Network Stream Replays
+  * View Keyframe GHOSTS of Decompressed NSR Files (nsr_raw)
 * Launch Firefall directly into selected NSR File

@@ -121,13 +121,13 @@
             this.SearchFilesToolStripMenuItem});
             this.ReplayFileItemContextMenu.Name = "ReplayFileItemContextMenu";
             this.ReplayFileItemContextMenu.ShowImageMargin = false;
-            this.ReplayFileItemContextMenu.Size = new System.Drawing.Size(158, 76);
+            this.ReplayFileItemContextMenu.Size = new System.Drawing.Size(159, 76);
             // 
             // CopyFilePathToolStripMenuItem
             // 
             this.CopyFilePathToolStripMenuItem.ForeColor = System.Drawing.Color.DarkGray;
             this.CopyFilePathToolStripMenuItem.Name = "CopyFilePathToolStripMenuItem";
-            this.CopyFilePathToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
+            this.CopyFilePathToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
             this.CopyFilePathToolStripMenuItem.Text = "Copy File Path";
             this.CopyFilePathToolStripMenuItem.Click += new System.EventHandler(this.CopyFilePathToolStripMenuItem_Click);
             // 
@@ -135,20 +135,20 @@
             // 
             this.OpenInFileExplorerToolStripMenuItem.ForeColor = System.Drawing.Color.DarkGray;
             this.OpenInFileExplorerToolStripMenuItem.Name = "OpenInFileExplorerToolStripMenuItem";
-            this.OpenInFileExplorerToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
+            this.OpenInFileExplorerToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
             this.OpenInFileExplorerToolStripMenuItem.Text = "Open in File Explorer";
             this.OpenInFileExplorerToolStripMenuItem.Click += new System.EventHandler(this.OpenInFileExplorerToolStripMenuItem_Click);
             // 
             // ReplayContextToolStripSeparator
             // 
             this.ReplayContextToolStripSeparator.Name = "ReplayContextToolStripSeparator";
-            this.ReplayContextToolStripSeparator.Size = new System.Drawing.Size(154, 6);
+            this.ReplayContextToolStripSeparator.Size = new System.Drawing.Size(155, 6);
             // 
             // SearchFilesToolStripMenuItem
             // 
             this.SearchFilesToolStripMenuItem.ForeColor = System.Drawing.Color.DarkGray;
             this.SearchFilesToolStripMenuItem.Name = "SearchFilesToolStripMenuItem";
-            this.SearchFilesToolStripMenuItem.Size = new System.Drawing.Size(157, 22);
+            this.SearchFilesToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
             this.SearchFilesToolStripMenuItem.Text = "Search Files";
             this.SearchFilesToolStripMenuItem.Click += new System.EventHandler(this.SearchFilesToolStripMenuItem_Click);
             // 

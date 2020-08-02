@@ -631,7 +631,7 @@ namespace NSRViewer.NSR
             { 1017, "Edward_Bowman_test_map" },
             { 1018, "DO NOT USE - Marketing - Antarctica" },
             { 1019, "Adrian's test spawn" },
-            { 1021, "Wasteland" },
+            { 1021, "Wasteland [Broken Peninsula]" },
             { 1022, "Boss - Wormasaurus" },
             { 1023, "ArcTest" },
             { 1024, "First 5 Experience - Intro to Firefall" },

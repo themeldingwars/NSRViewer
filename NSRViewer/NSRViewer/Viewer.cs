@@ -46,6 +46,11 @@ namespace NSRViewer
                     ReplayFileListBox.Items.Add(file);
                 }
             }
+
+            foreach (string file in Directory.GetFiles(nsrDirectory, "*.nsr_raw", SearchOption.TopDirectoryOnly))
+            {
+                ReplayFileListBox.Items.Add(file);
+            }
         }
 
         public string GetNSRDirectory()
@@ -74,7 +79,16 @@ namespace NSRViewer
             // matrix_fury::RequestGhosts->Headers
 
             // description header
-            char[] nsrDescription = binaryReader.ReadChars(4);
+            try
+            {
+                char[] nsrDescription = binaryReader.ReadChars(4);
+            }
+            catch (InvalidDataException ex)
+            {
+                // file is either corrupt or not a valid NSR file
+                return false;
+            }
+
             nsrFile.DescriptionHeader.Version = binaryReader.ReadUInt32();
             nsrFile.DescriptionHeader.HeaderLength = binaryReader.ReadUInt32();
             nsrFile.DescriptionHeader.MetaLength = binaryReader.ReadUInt32();
@@ -136,6 +150,34 @@ namespace NSRViewer
 
             nsrFile.MetaHeader.Unk4 = binaryReader.ReadBytes(31);
             // meta header
+
+            return true;
+        }
+
+        public bool LoadNSRIndexHeader(BinaryReader binaryReader, ref NSR.NSR nsrFile)
+        {
+            // binaryReader is to a filename.*.nsr.index stream
+
+            char[] nsrIndex = binaryReader.ReadChars(4);
+
+            nsrFile.IndexHeader.Version = binaryReader.ReadUInt32();
+            nsrFile.IndexHeader.Unk0 = binaryReader.ReadUInt32();
+            nsrFile.IndexHeader.Unk1 = binaryReader.ReadUInt32();
+            nsrFile.IndexHeader.Count = binaryReader.ReadUInt32();
+            nsrFile.IndexHeader.IndexOffset = binaryReader.ReadUInt32();
+            nsrFile.IndexHeader.Offsets = new uint[nsrFile.IndexHeader.Count];
+
+            for (int i = 0; i < nsrFile.IndexHeader.Count; i++)
+            {
+                nsrFile.IndexHeader.Offsets[i] = binaryReader.ReadUInt32();
+            }
+
+            // TODO: Provide option to update DescriptionHeader.HeaderLength to include IndexHeader length
+            // This would ultimately merge the standalone index file into the base nsr file.
+            if (false)
+            {
+                nsrFile.DescriptionHeader.HeaderLength += nsrFile.IndexHeader.IndexOffset + (nsrFile.IndexHeader.Count * 4);
+            }
 
             return true;
         }
@@ -253,12 +295,12 @@ namespace NSRViewer
                 compressedStreamPreview.Position = 0;
 
                 using (GZipStream decompressedStream = new GZipStream(compressedStreamPreview, CompressionMode.Decompress))
-                using (BinaryReader b = new BinaryReader(decompressedStream, Encoding.UTF8))
+                using (BinaryReader b =  (ReplayFileListBox.SelectedItem.ToString().EndsWith(".nsr_raw") ? new BinaryReader(compressedStreamPreview, Encoding.UTF8) : new BinaryReader(decompressedStream, Encoding.UTF8)))
                 {
                     NSR.NSR nsrFile = new NSR.NSR();
                     if (!LoadNSRPreview(b, ref nsrFile))
                     {
-                        MessageBox.Show("Error loading Network Stream Replay.");
+                        MessageBox.Show("Error loading Network Stream Replay.", "Network Stream Replay Viewer", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         return;
                     }
 
@@ -286,6 +328,12 @@ namespace NSRViewer
                 return;
             }
 
+            if (ReplayFileListBox.SelectedItem.ToString().EndsWith(".nsr_raw"))
+            {
+                MessageBox.Show("The selected Replay File already is in a decompressed format.", "Network Stream Replay Viewer", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             SaveFileDialog saveFileDialog = new SaveFileDialog
             {
                 Filter = "Decompressed NSR Files (*.nsr_raw)|*.nsr_raw",
@@ -300,7 +348,7 @@ namespace NSRViewer
             byte[] compressedFile = File.ReadAllBytes(ReplayFileListBox.SelectedItem.ToString());
             byte[] decompressedBytes = Decompress(compressedFile);
             File.WriteAllBytes(saveFileDialog.FileName, decompressedBytes);
-            MessageBox.Show("Export Complete.", "Export Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Export Complete.", "Network Stream Replay Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void CopyInfoBtn_Click(object sender, EventArgs e)
@@ -323,7 +371,7 @@ namespace NSRViewer
             clipboardString += "File Size: " + FileSizeValLabel.Text + Environment.NewLine;
 
             Clipboard.SetText(clipboardString);
-            MessageBox.Show("Information Copied to Clipboard!", "Information Copied", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            MessageBox.Show("Information Copied to Clipboard!", "Network Stream Replay Viewer", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         private void ViewGhostsBtn_Click(object sender, EventArgs e)
@@ -336,7 +384,7 @@ namespace NSRViewer
             // Display data collected from matrix_fury::RequestGhosts
             // Full Load NSR
             byte[] compressedFile = File.ReadAllBytes(ReplayFileListBox.SelectedItem.ToString()); // loads compressed size into memory
-            byte[] decompressedBytes = Decompress(compressedFile); // loads raw size 2x into memory
+            byte[] decompressedBytes = ReplayFileListBox.SelectedItem.ToString().EndsWith(".nsr_raw") ? compressedFile : Decompress(compressedFile); // loads raw size 2x into memory
 
             // Done using compressed data now
             compressedFile = null;
@@ -347,7 +395,7 @@ namespace NSRViewer
                 NSR.NSR nsrFile = new NSR.NSR();
                 if (LoadNSR(decompressedReader, ref nsrFile) == false) // loads raw size 2x into memory
                 {
-                    MessageBox.Show("Error loading Network Stream Replay.");
+                    MessageBox.Show("Error loading Network Stream Replay.", "Network Stream Replay Viewer", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 else
                 {
@@ -397,7 +445,7 @@ namespace NSRViewer
             startInfo.FileName = clientInfo.Name;
             startInfo.Arguments = $"--open=\"{ReplayFileListBox.SelectedItem}\"";
             System.Diagnostics.Process.Start(startInfo);
-            MessageBox.Show("Firefall Launched");
+            MessageBox.Show("Firefall Launched", "Network Stream Replay Viewer", MessageBoxButtons.OK);
         }
 
         private void ReplayFileListBox_DragEnter(object sender, DragEventArgs e)
@@ -420,7 +468,7 @@ namespace NSRViewer
                     fileDirectoryPath = files[0];
                 }
 
-                if (MessageBox.Show($"Open directory [{fileDirectoryPath}] ?", "Open NSR Directory", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                if (MessageBox.Show($"Open directory [{fileDirectoryPath}] ?", "Network Stream Replay Viewer", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                 {
                     LoadNSRDirectory(fileDirectoryPath);
                     ReplayFileListBox.Focus();
